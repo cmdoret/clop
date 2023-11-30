@@ -1,27 +1,28 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-IMGSIZE = 8
-windowsize = 3
-letter_to_num = {'A': 0,
-                 'C': 1,
-                 'G': 2,
-                 'T': 3}
 
-letter_to_x = {'A': 0,
-                 'C': 1,
-                 'G': 0,
-                 'T': 1}
 
-letter_to_y = {'A': 0,
-                 'C': 0,
-                 'G': 1,
-                 'T': 1}
+def fcgr(seq: str, k=8):
+    letter_to_num = {'A': 0,
+                    'C': 1,
+                    'G': 2,
+                    'T': 3}
 
-def fcgr(seq: str):
+    letter_to_x = {'A': 0,
+                    'C': 1,
+                    'G': 0,
+                    'T': 1}
+
+    letter_to_y = {'A': 0,
+                    'C': 0,
+                    'G': 1,
+                    'T': 1}
+
+    IMGSIZE = 2**k
     img = np.zeros((IMGSIZE, IMGSIZE))
 
-    substrs = [seq[i:i+windowsize] for i in range(len(seq)-windowsize+1)]
+    substrs = [seq[i:i+k] for i in range(len(seq)-k+1)]
 
     for substr in substrs:
         x = 0
@@ -34,7 +35,7 @@ def fcgr(seq: str):
     return img
 
 if __name__ == '__main__':
-    img = fcgr('ACG')
-    print(img)
+    img = fcgr('ACG', k=3)
+    print(img,)
     #plt.imshow(img)
     #plt.show()
