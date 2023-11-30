@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DNA Sequence and Annotation Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e8eff1;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            resize: vertical;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        .output-row {
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 8px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .output-row:hover {
+            background-color: #f9f9f9;
+            border-color: #b6b6b6;
+        }
+        #cgrPanel {
+            width: 100%;
+            max-width: 350px;
+            height: 350px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DNA Sequence and Annotation Tool</h1>
+        <p>Explore the world of Genomics</p>
+    </div>
+
+    <div class="container">
+        <input type="file" id="embeddingFile" />
+    </div>
+
+    <div class="container">
+        <textarea id="dnaSequenceInput" placeholder="Paste DNA sequence here"></textarea>
+        <div id="predictionOutput"></div>
+    </div>
+
+    <div class="container">
+        <textarea id="annotationInput" placeholder="Type annotation here"></textarea>
+        <div id="generationOutput"></div>
+    </div>
+
+    <div class="container">
+        <canvas id="cgrPanel"></canvas>
+    </div>
+
+    <script>
+        document.getElementById('dnaSequenceInput').addEventListener('input', performSequencePrediction);
+        document.getElementById('annotationInput').addEventListener('input', performSequenceGeneration);
+
+        function performSequencePrediction() {
+            const dnaSequence = document.getElementById('dnaSequenceInput').value;
+            if (dnaSequence.match(/[^ATGC]/i)) {
+                displayPredictionOutput("Nonstandard bases in input");
+            } else {
+                const predictions = mockSequencePrediction(dnaSequence);
+                displayPredictionOutput(predictions.map(p => `<div class='output-row'>${p}</div>`).join(''));
+            }
+        }
+
+        function performSequenceGeneration() {
+            const annotation = document.getElementById('annotationInput').value;
+            if (annotation.length < 3) {
+                displayGenerationOutput("Please input a longer description");
+            } else {
+                const sequences = mockSequenceGeneration(annotation);
+                displayGenerationOutput(sequences.map(s => `<div class='output-row'>${s}</div>`).join(''));
+            }
+        }
+
+        function displayPredictionOutput(content) {
+            document.getElementById('predictionOutput').innerHTML = content;
+        }
+
+        function displayGenerationOutput(content) {
+            document.getElementById('generationOutput').innerHTML = content;
+        }
+
+        function drawCGR(sequence) {
+            const canvas = document.getElementById('cgrPanel');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!sequence) return;
+
+            let x = canvas.width / 2, y = canvas.height / 2;
+            const step = 20;
+
+            sequence.split('').forEach(nucleotide => {
+                switch (nucleotide.toUpperCase()) {
+                    case 'A': x -= step; y -= step; break;
+                    case 'T': x += step; y -= step; break;
+                    case 'G': x -= step; y += step; break;
+                    case 'C': x += step; y += step; break;
+                }
+                ctx.fillRect(x, y, 2, 2);
+            });
+        }
+
+        document.getElementById('generationOutput').addEventListener('click', event => {
+            if (event.target.className === 'output-row') {
+                drawCGR(event.target.textContent);
+            }
+        });
+
+        function mockSequencePrediction(sequence) {
+            // Replace this with your actual prediction logic
+            return ["Annotation 1", "Annotation 2", "Annotation 3"];
+        }
+
+        function mockSequenceGeneration(annotation) {
+            // Replace this with your actual generation logic
+            return ["Sequence 1", "Sequence 2", "Sequence 3"];
+        }
+    </script>
+</body>
+</html>
