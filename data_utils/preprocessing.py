@@ -12,7 +12,7 @@ def protein_to_dna(protein_sequence):
         'N': ['AAT', 'AAC'], 'K': ['AAA', 'AAG'], 'D': ['GAT', 'GAC'],
         'E': ['GAA', 'GAG'], 'C': ['TGT', 'TGC'], 'W': ['TGG'],
         'R': ['CGT', 'CGC', 'CGA', 'CGG', 'AGA', 'AGG'], 'G': ['GGT', 'GGC', 'GGA', 'GGG'],
-        '*': ['TAA', 'TAG', 'TGA']  # Stop codon
+        '*': ['TAA', 'TAG', 'TGA'], 'X': ['TAA', 'TAG', 'TGA']  # Stop codon
     }
 
     dna_sequence = ''
@@ -56,8 +56,26 @@ def fcgr(seq: str, k=8):
 
     return img
 
+
+def preprocess_inputs(path, path_save):
+    label_column = 'Protein names'
+    input_column = 'Sequence'
+    df = pd.read_table(path)
+    sequences = df[input_column]
+    labels = df[label_column]
+
+    labels = sequences[~sequences.str.contains('U|O')]
+    sequences = sequences[~sequences.str.contains('U|O')]
+    dna_sequences = sequences.apply(protein_to_dna)
+
+    labels.save(path_save + 'labels.csv')
+    dna_sequences.save(path_save + 'sequences.csv')
+    print('saved processed sequences and labels (annotations')
+
 if __name__ == '__main__':
-    img = fcgr('ACG', k=3)
-    print(img,)
+    preprocess_inputs(r'data//uniprotkb_taxonomy_id_9606_AND_model_or_2023_11_30.tsv',
+                      r'data//')
+    #img = fcgr('ACG', k=3)
+    #print(img,)
     #plt.imshow(img)
     #plt.show()
