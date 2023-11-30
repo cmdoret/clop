@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DNA Sequence and Annotation Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { margin-bottom: 20px; }
+        #cgrPanel { width: 300px; height: 300px; border: 1px solid black; }
+        .output-row { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="file" id="embeddingFile" />
+    </div>
+
+    <div class="container">
+        <textarea id="dnaSequenceInput" placeholder="Paste DNA sequence here"></textarea>
+        <div id="predictionOutput" class="container"></div>
+    </div>
+
+    <div class="container">
+        <textarea id="annotationInput" placeholder="Type annotation here"></textarea>
+        <div id="generationOutput" class="container"></div>
+    </div>
+
+    <canvas id="cgrPanel" class="container"></canvas>
+
+    <script>
+        document.getElementById('dnaSequenceInput').addEventListener('input', performSequencePrediction);
+        document.getElementById('annotationInput').addEventListener('input', performSequenceGeneration);
+
+        function performSequencePrediction() {
+            const dnaSequence = document.getElementById('dnaSequenceInput').value;
+            if (dnaSequence.match(/[^ATGC]/i)) {
+                displayPredictionOutput("Nonstandard bases in input");
+            } else {
+                const predictions = mockSequencePrediction(dnaSequence);
+                displayPredictionOutput(predictions.map(p => `<div class='output-row'>${p}</div>`).join(''));
+            }
+        }
+
+        function performSequenceGeneration() {
+            const annotation = document.getElementById('annotationInput').value;
+            if (annotation.length < 3) {
+                displayGenerationOutput("Please input a longer description");
+            } else {
+                const sequences = mockSequenceGeneration(annotation);
+                displayGenerationOutput(sequences.map(s => `<div class='output-row'>${s}</div>`).join(''));
+            }
+        }
+
+        function displayPredictionOutput(content) {
+            document.getElementById('predictionOutput').innerHTML = content;
+        }
+
+        function displayGenerationOutput(content) {
+            document.getElementById('generationOutput').innerHTML = content;
+        }
+
+        function drawCGR(sequence) {
+            const canvas = document.getElementById('cgrPanel');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!sequence) return;
+
+            let x = canvas.width / 2, y = canvas.height / 2;
+            const step = 20;
+
+            sequence.split('').forEach(nucleotide => {
+                switch (nucleotide.toUpperCase()) {
+                    case 'A': x -= step; y -= step; break;
+                    case 'T': x += step; y -= step; break;
+                    case 'G': x -= step; y += step; break;
+                    case 'C': x += step; y += step; break;
+                }
+                ctx.fillRect(x, y, 2, 2);
+            });
+        }
+
+        document.getElementById('generationOutput').addEventListener('click', event => {
+            if (event.target.className === 'output-row') {
+                drawCGR(event.target.textContent);
+            }
+        });
+
+        function mockSequencePrediction(sequence) {
+            // Replace this with your actual prediction logic
+            return ["Annotation 1", "Annotation 2", "Annotation 3"];
+        }
+
+        function mockSequenceGeneration(annotation) {
+            // Replace this with your actual generation logic
+            return ["Sequence 1", "Sequence 2", "Sequence 3"];
+        }
+    </script>
+</body>
+</html>
