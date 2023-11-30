@@ -1,5 +1,5 @@
 from transformers import CLIPModel, AutoModel, CLIPProcessor
-from preprocessing import fcgr
+from preprocessing import fcgr, protein_to_dna
 import torch
 
 import pandas as pd
@@ -7,7 +7,12 @@ import pandas as pd
 
 df = pd.read_table(r'..//data//uniprotkb_taxonomy_id_9606_AND_model_or_2023_11_30.tsv')
 
-img = fcgr('ACG', k=3)
+# Example usage
+protein_seq = "MVK"
+dna_seq = protein_to_dna(protein_seq)
+print("DNA Sequence:", dna_seq)
+
+img = fcgr(dna_seq, k=3)
 img = torch.Tensor(img).unsqueeze(0).unsqueeze(0).repeat(1, 3, 1, 1)
 
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
