@@ -61,6 +61,28 @@
             color: #7f8c8d;
             font-size: 16px;
         }
+
+        #cgrContainer {
+            display: flex;
+            align-items: center;
+        }
+        #colorBarCanvas {
+            width: 20px;
+            height: 350px;
+            border: 1px solid #ccc;
+            margin-left: 10px;
+        }
+        .color-legend {
+            font-size: 12px;
+            margin-left: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 350px;
+        }
+        .color-legend span {
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -84,15 +106,60 @@
     </div>
 
     <div class="container">
+        <button id="resetButton">Reset All Fields</button>
+    </div>
+
+    <div class="container" id="cgrContainer">
         <canvas id="cgrPanel"></canvas>
+        <canvas id="colorBarCanvas"></canvas>
+        <div class="color-legend">
+            <span>High Frequency</span>
+            <!-- Add more legend entries as needed -->
+            <span>Low Frequency</span>
+        </div>
     </div>
 
     <script>
         document.getElementById('dnaSequenceInput').addEventListener('input', performSequencePrediction);
         document.getElementById('annotationInput').addEventListener('input', performSequenceGeneration);
 
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSavedData();
+        });
+
+        document.getElementById('dnaSequenceInput').addEventListener('input', e => {
+            localStorage.setItem('dnaSequenceInput', e.target.value);
+            performSequencePrediction();
+        });
+
+        document.getElementById('annotationInput').addEventListener('input', e => {
+            localStorage.setItem('annotationInput', e.target.value);
+            performSequenceGeneration();
+        });
+
+        document.getElementById('resetButton').addEventListener('click', () => {
+            localStorage.clear();
+            document.getElementById('dnaSequenceInput').value = '';
+            document.getElementById('annotationInput').value = '';
+            document.getElementById('predictionOutput').innerHTML = '';
+            document.getElementById('generationOutput').innerHTML = '';
+            clearCGRPanel();
+        });
+
+
+
+        function clearCGRPanel() {
+            const canvas = document.getElementById('cgrPanel');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
         function performSequencePrediction() {
-            const dnaSequence = document.getElementById('dnaSequenceInput').value;
+            let dnaSequence = document.getElementById('dnaSequenceInput').value;
+
+            // Remove whitespace (spaces, tabs, newlines) from the sequence
+            dnaSequence = dnaSequence.replace(/\s+/g, '');
+
             if (dnaSequence.match(/[^ATGC]/i)) {
                 displayPredictionOutput("Nonstandard bases in input");
             } else {
@@ -119,32 +186,141 @@
             document.getElementById('generationOutput').innerHTML = content;
         }
 
-        function drawCGR(sequence) {
-            const canvas = document.getElementById('cgrPanel');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('dnaSequenceInput').addEventListener('input', performSequencePrediction);
+        document.getElementById('dnaSequenceInput').addEventListener('mouseup', updateCGRWithHighlightedText);
+        document.getElementById('dnaSequenceInput').addEventListener('keyup', updateCGRWithHighlightedText);
 
-            if (!sequence) return;
+        document.getElementById('dnaSequenceInput').addEventListener('input', updateCGRFromInput);
+        document.getElementById('dnaSequenceInput').addEventListener('mouseup', updateCGRFromInput);
+        document.getElementById('dnaSequenceInput').addEventListener('keyup', updateCGRFromInput);
 
-            let x = canvas.width / 2, y = canvas.height / 2;
-            const step = 20;
+        function updateCGRFromInput() {
+            const input = document.getElementById('dnaSequenceInput');
+            let selectedText = input.value.substring(input.selectionStart, input.selectionEnd);
 
-            sequence.split('').forEach(nucleotide => {
-                switch (nucleotide.toUpperCase()) {
-                    case 'A': x -= step; y -= step; break;
-                    case 'T': x += step; y -= step; break;
-                    case 'G': x -= step; y += step; break;
-                    case 'C': x += step; y += step; break;
-                }
-                ctx.fillRect(x, y, 2, 2);
-            });
+            // Remove whitespace (spaces, tabs, newlines) from the selected text
+            selectedText = selectedText.replace(/\s+/g, '');
+
+            if (selectedText) {
+                drawCGR(selectedText);
+            }
         }
+
+        function updateCGRWithHighlightedText() {
+            const input = document.getElementById('dnaSequenceInput');
+            const highlightedText = input.value.substring(input.selectionStart, input.selectionEnd);
+            drawCGR(highlightedText);
+        }
+
+        function drawCGR(sequence, k = 8) {
+            if (!sequence) return; // Don't draw if sequence is empty
+
+            const letterToX = { 'A': 0, 'C': 1, 'G': 0, 'T': 1 };
+            const letterToY = { 'A': 0, 'C': 0, 'G': 1, 'T': 1 };
+
+            const imgSize = 2 ** k;
+            const canvas = document.getElementById('cgrPanel');
+            canvas.width = imgSize; 
+            canvas.height = imgSize;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, imgSize, imgSize);
+
+            // Calculate pixel size based on sequence length
+            const pixelSize = Math.max(1, Math.ceil(10 * Math.log10(imgSize / sequence.length)));
+
+            const substrs = getSubstrings(sequence, k);
+
+            let frequencyMap = new Map();
+            substrs.forEach(substr => {
+                let x = 0, y = 0;
+                for (let i = 0; i < substr.length; i++) {
+                    const s = substr[i].toUpperCase();
+                    if (!(s in letterToX)) continue;
+
+                    x += letterToX[s] * imgSize / (2 ** (i + 1));
+                    y += letterToY[s] * imgSize / (2 ** (i + 1));
+                }
+
+                let pos = `${Math.floor(x)},${Math.floor(y)}`;
+                frequencyMap.set(pos, (frequencyMap.get(pos) || 0) + 1);
+            });
+            let maxFrequency = Math.max(...frequencyMap.values());
+
+            if (maxFrequency === 0) maxFrequency = 1;
+
+            frequencyMap.forEach((count, pos) => {
+                let [x, y] = pos.split(',').map(Number);
+                let color = getColorForFrequency(count);
+                ctx.fillStyle = color;
+
+                ctx.shadowBlur = pixelSize / 2;
+                ctx.shadowColor = color;
+
+                ctx.fillRect(x - pixelSize / 2, y - pixelSize / 2, pixelSize, pixelSize); // Draw a larger point
+            });
+
+            ctx.shadowBlur = 0;
+
+            drawColorBar();
+        }
+
+
+        function getColorForFrequency(frequency) {
+            // Define a more sophisticated color mapping as needed
+            if (frequency < 5) return '#add8e6';
+            if (frequency < 10) return '#0000ff';
+            return '#ff0000';
+        }
+
+        function drawColorBar(maxFrequency) {
+            const colorBar = document.getElementById('colorBarCanvas');
+            colorBar.width = 20;
+            colorBar.height = 350;
+            const ctx = colorBar.getContext('2d');
+
+            // Adjust the maximum frequency to ignore the very highest value
+            const adjustedMaxFrequency = maxFrequency * 0.8; // Example: 80% of max frequency
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+            gradient.addColorStop(0, '#ff0000'); // Red for highest frequency
+            gradient.addColorStop(0.5, '#0000ff'); // Dark blue for mid frequency
+            gradient.addColorStop(1, '#add8e6'); // Light blue for low frequency
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 20, 350);
+        }
+
+        function getSubstrings(str, length) {
+            const substrs = [];
+            for (let i = 0; i <= str.length - length; i++) {
+                substrs.push(str.substring(i, i + length));
+            }
+            return substrs;
+        }
+
 
         document.getElementById('generationOutput').addEventListener('click', event => {
             if (event.target.className === 'output-row') {
                 drawCGR(event.target.textContent);
             }
         });
+
+        function loadSavedData() {
+            const dnaSequenceInput = localStorage.getItem('dnaSequenceInput');
+            const annotationInput = localStorage.getItem('annotationInput');
+
+            if (dnaSequenceInput) {
+                document.getElementById('dnaSequenceInput').value = dnaSequenceInput;
+                performSequencePrediction();
+            }
+
+            if (annotationInput) {
+                document.getElementById('annotationInput').value = annotationInput;
+                performSequenceGeneration();
+            }
+        }
 
         function mockSequencePrediction(sequence) {
             // Replace this with your actual prediction logic
