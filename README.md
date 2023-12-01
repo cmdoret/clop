@@ -15,7 +15,9 @@ This transformation allows us to work with sequences of very different lengths w
 We directly fine-tune the CLIP transformers using these DNA images and function texts.
 
 
-## Process
+## Use cases
+
+The shared embedding can be used directly for various downstream genomic analysis, such as predicting the function of an input sequence, finding closely related sequences with similar functions, or for zero shot classification of DNA sequences (e.g. to detect contaminating sequences).
 
 ```mermaid
 
