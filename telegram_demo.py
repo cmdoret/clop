@@ -7,7 +7,7 @@ python demo.py
 
 Press Ctrl-C on the command line to stop the bot.
 """
-
+from data_utils.preprocessing import fcgr
 import logging
 
 from telegram import ForceReply, Update
@@ -23,36 +23,6 @@ from telegram.ext import ContextTypes  # Make sure you import the correct Contex
 from PIL import Image
 import numpy as np
 
-def fcgr(seq: str, k=8):
-    letter_to_num = {'A': 0,
-                    'C': 1,
-                    'G': 2,
-                    'T': 3}
-
-    letter_to_x = {'A': 0,
-                    'C': 1,
-                    'G': 0,
-                    'T': 1}
-
-    letter_to_y = {'A': 0,
-                    'C': 0,
-                    'G': 1,
-                    'T': 1}
-
-    IMGSIZE = 2**k
-    img = np.zeros((IMGSIZE, IMGSIZE))
-
-    substrs = [seq[i:i+k] for i in range(len(seq)-k+1)]
-
-    for substr in substrs:
-        x = 0
-        y = 0
-        for i, s in enumerate(substr):
-            x = x + letter_to_x[s] * IMGSIZE/(2 ** (i+1))
-            y = y + letter_to_y[s] * IMGSIZE / (2 ** (i+1))
-        img[int(y), int(x)] += 1
-
-    return img
 
 # Enable logging
 logging.basicConfig(
@@ -86,7 +56,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if set(update.message.text.upper()) <= set("ATCG"):
-        k = np.min([8, len(update.message.text)//3])
+        k = np.min([6, len(update.message.text)//3])
         fcgr_image = fcgr(update.message.text.upper(), k=k)
 
         # Convert NumPy array to unsigned 8-bit integer array
