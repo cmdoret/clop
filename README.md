@@ -1,7 +1,6 @@
 # CLOP: Contrastive Language-Omics Pre-training
 ## Team: Swiss-Androsace
 
-
 ## Project description
 
 CLOP aims to provide a shared embedding for omics (DNA, RNA, protein) sequences and their functions which can be used to perform downstream analysis at high speed.
@@ -14,6 +13,13 @@ This transformation allows us to work with sequences of very different lengths w
 
 We directly fine-tune the CLIP transformers using these DNA images and function texts.
 
+## Status
+
+The fine-tuning of the model could not be done in time, there are 2 wip demos:
+* A telegram bot is available to return the image representation of input DNA sequences: https://t.me/clip_clop_bot
+* A mock interface on GitHub pages to propose related functions to an input sequence: https://baudrly.github.io/clop/
+
+A telegram bot is avail
 
 ## Use cases
 
@@ -53,3 +59,4 @@ end;
 For this demo, we restricted the training set to human transcript sequences (version GRCh38) and their functional annotations, available to download from https://www.ncbi.nlm.nih.gov/genome/guide/human/
 
 We further subsampled 50,000 sequence-annotation pairs for the fine-tuning experiment.
+
