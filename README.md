@@ -27,7 +27,7 @@ The shared embedding can be used directly for various downstream genomic analysi
 
 ```mermaid
 
-flowchart LR;
+graph LR;
 
 subgraph func[Function prediction]
     CLOPFUN[CLOP]
