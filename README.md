@@ -1,5 +1,4 @@
 # CLOP: Contrastive Language-Omics Pre-training
-## Team: Swiss-Androsace
 
 ## Project description
 
@@ -19,7 +18,6 @@ The fine-tuning of the model could not be done in time, there are 2 wip demos:
 * A telegram bot is available to return the image representation of input DNA sequences: https://t.me/clip_clop_bot
 * A mock interface on GitHub pages to propose related functions to an input sequence: https://baudrly.github.io/clop/
 
-A telegram bot is avail
 
 ## Use cases
 
@@ -60,3 +58,6 @@ For this demo, we restricted the training set to human transcript sequences (ver
 
 We further subsampled 50,000 sequence-annotation pairs for the fine-tuning experiment.
 
+## Acknowledgement
+
+This project originated at the 2023 SDSC-hackathon on Generative AI. It was initiated by the team Swiss-Androsace (see members in the [LICENSE](./LICENSE) copyright notice).
