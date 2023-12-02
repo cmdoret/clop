@@ -19,7 +19,6 @@ The fine-tuning of the model could not be done in time, there are 2 wip demos:
 * A telegram bot is available to return the image representation of input DNA sequences: https://t.me/clip_clop_bot
 * A mock interface on GitHub pages to propose related functions to an input sequence: https://baudrly.github.io/clop/
 
-A telegram bot is avail
 
 ## Use cases
 
