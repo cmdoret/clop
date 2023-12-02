@@ -27,30 +27,30 @@ The shared embedding can be used directly for various downstream genomic analysi
 
 ```mermaid
 
-graph LR;
+graph LR
 
-subgraph func[Function prediction]
-    CLOPFUN[CLOP]
-end;
-subgraph fuzz[Fuzzy matching]
-    CLOPFUZ[CLOP]
-    MATCH["🧬🧬🧬"]
-end;
-subgraph zero[Zero shot classification];
-    CLOPZERO[CLOP]
-end;
-  AFUN["🧬"] -->|embed| CLOPFUN;
+    subgraph func[Function prediction]
+        CLOPFUN[CLOP]
+    end
+    subgraph fuzz[Fuzzy matching]
+        CLOPFUZ[CLOP]
+        MATCH["🧬🧬🧬"]
+    end
+    subgraph zero[Zero shot classification]
+        CLOPZERO[CLOP]
+    end
+  AFUN["🧬"] -->|embed| CLOPFUN
   CLOPFUN -->|closest texts| FUN["Antibiotic resistance\nAntibiotic degradation"]
-  AFUZ["🧬"] -->|embed| CLOPFUZ;
-  CLOPFUZ -->|closest dna| MATCH;
-  AZER["🧬"] -->|embed| CLOPZERO;
-  DOL[🐬] -->|embed| CLOPZERO;
-  BAC[🦠] -->|embed| CLOPZERO;
-  CLOPZERO --> |similarity| DOLSIM["🐬, 🧬"];
-  CLOPZERO --> |similarity| BACSIM["🦠, 🧬"];
-  BACSIM --> MAX;
-  DOLSIM --> MAX;
-  MAX --> SELECT[🦠]
+  AFUZ["🧬"] -->|embed| CLOPFUZ
+  CLOPFUZ -->|closest dna| MATCH
+  AZER["🧬"] -->|embed| CLOPZERO
+  DOL["🐬"] -->|embed| CLOPZERO
+  BAC["🦠"] -->|embed| CLOPZERO
+  CLOPZERO --> |similarity| DOLSIM["🐬, 🧬"]
+  CLOPZERO --> |similarity| BACSIM["🦠, 🧬"]
+  BACSIM --> MAX
+  DOLSIM --> MAX
+  MAX --> SELECT["🦠"]
 
 ```
 
