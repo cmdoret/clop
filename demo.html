@@ -5,48 +5,94 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e8eff1;
+            background-color: #f0f4f7;
             margin: 0;
             padding: 20px;
             color: #333;
         }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+            height: 95vh;
         }
-        textarea {
-            width: 100%;
+        .input-container {
+            width: 48%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .container {
+            background: #fff; /* subtle gradient */
+            background: linear-gradient(to bottom right, #fff, #e6f0ff);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        textarea, input, label {
+            width: calc(100% - 24px);
             padding: 12px;
-            border-radius: 5px;
+            border-radius: 8px;
             border: 1px solid #ccc;
-            font-size: 14px;
-            resize: vertical;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
+            font-size: 16px;
+            background: #fafafa;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+        textarea:focus, input:focus {
+            border: 1px solid #4CAF50;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2a3f5f;
         }
         .output-row {
             cursor: pointer;
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-top: 8px;
-            transition: background-color 0.3s, border-color 0.3s;
+            padding: 10px 15px;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            border: 1px solid #d1d1d1;
+            margin-top: 10px;
+            transition: all 0.3s ease;
         }
         .output-row:hover {
-            background-color: #f9f9f9;
+            background-color: #e6e6e6;
             border-color: #b6b6b6;
+            transform: scale(1.02);
+        }
+        #cgrContainer {
+            width: 48%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
         }
         #cgrPanel {
-            width: 100%;
-            max-width: 350px;
-            height: 350px;
-            border: 1px solid #ccc;
-            margin-top: 10px;
+            width: 80%;
+            height: 80vh;
+            max-width: 100%;
+            aspect-ratio: 1;
+            border-radius: 15px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+            transition: box-shadow 0.3s ease;
+        }
+        #cgrPanel:hover {
+            box-shadow: 10px 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        #colorBarCanvas {
+            height: 80vh;
+            width: 20px;
+            margin-left: 20px;
             border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15);
         }
         .header {
             text-align: center;
@@ -55,69 +101,66 @@
         .header h1 {
             color: #2c3e50;
             margin: 0;
-            font-size: 28px;
+            font-size: 32px;
+            font-weight: normal;
         }
         .header p {
             color: #7f8c8d;
+            font-size: 18px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
-
-        #cgrContainer {
-            display: flex;
-            align-items: center;
-        }
-        #colorBarCanvas {
-            width: 20px;
-            height: 350px;
-            border: 1px solid #ccc;
-            margin-left: 10px;
-        }
-        .color-legend {
-            font-size: 12px;
-            margin-left: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 350px;
-        }
-        .color-legend span {
-            text-align: left;
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>DNA Sequence and Annotation Tool</h1>
-        <p>Explore the world of Genomics</p>
-    </div>
+    <div class="main-container">
+        <div class="input-container">
+            <div class="header">
+                <h1>DNA Sequence and Annotation Tool</h1>
+                <p>Explore the world of Genomics</p>
+            </div>
+            <div class="container">
+                <textarea id="dnaSequenceInput" placeholder="Paste DNA sequence here"></textarea>
+                <div id="predictionOutput"></div>
+            </div>
+            <div class="container">
+                <textarea id="annotationInput" placeholder="Type annotation here"></textarea>
+                <div id="generationOutput"></div>
+            </div>
+            <div class="container">
+                <label for="fuzzySearchInput">Fuzzy Search</label>
+                <textarea id="fuzzySearchInput" placeholder="Enter sequence for fuzzy search"></textarea>
+                <div id="fuzzySearchOutput"></div>
+            </div>
+            <div class="container">
+                <button id="resetButton">Reset All Fields</button>
+            </div>
+        </div>
 
-    <div class="container">
-        <input type="file" id="embeddingFile" />
-    </div>
-
-    <div class="container">
-        <textarea id="dnaSequenceInput" placeholder="Paste DNA sequence here"></textarea>
-        <div id="predictionOutput"></div>
-    </div>
-
-    <div class="container">
-        <textarea id="annotationInput" placeholder="Type annotation here"></textarea>
-        <div id="generationOutput"></div>
-    </div>
-
-    <div class="container">
-        <button id="resetButton">Reset All Fields</button>
-    </div>
-
-    <div class="container" id="cgrContainer">
-        <canvas id="cgrPanel"></canvas>
-        <canvas id="colorBarCanvas"></canvas>
-        <div class="color-legend">
-            <span>High Frequency</span>
-            <!-- Add more legend entries as needed -->
-            <span>Low Frequency</span>
+        <div id="cgrContainer" class="container">
+            <canvas id="cgrPanel"></canvas>
+            <canvas id="colorBarCanvas"></canvas>
         </div>
     </div>
+
+
+
 
     <script>
         document.getElementById('dnaSequenceInput').addEventListener('input', performSequencePrediction);
@@ -146,6 +189,54 @@
             clearCGRPanel();
         });
 
+        document.getElementById('fuzzySearchInput').addEventListener('input', performFuzzySearch);
+
+        function performFuzzySearch() {
+            const sequence = document.getElementById('fuzzySearchInput').value;
+            const closestSequences = findClosestSequenceMatches(sequence);
+            displayFuzzySearchResults(closestSequences);
+        }
+
+        function findClosestSequenceMatches(inputSequence) {
+            let inputIndex = dnaSequences.indexOf(inputSequence);
+            if (inputIndex === -1) return [];
+
+            let distances = pairwiseDistances[inputIndex];
+            let matchIndices = [];
+
+            // Find distances between the input sequence and other sequences
+            for (let i = 0; i < dnaSequences.length; i++) {
+                if (i !== inputIndex) { // Skip the distance to itself
+                    matchIndices.push({ index: i, distance: distances[i] });
+                }
+            }
+
+            // Sort by distance and get the top 3
+            matchIndices.sort((a, b) => a.distance - b.distance);
+            return matchIndices.slice(0, 3).map(x => dnaSequences[x.index]);
+        }
+
+        function displayFuzzySearchResults(matches) {
+            const outputElement = document.getElementById('fuzzySearchOutput');
+            outputElement.innerHTML = matches.map(match => `<div class='output-row'>${match}</div>`).join('');
+        }
+
+        // Update the image based on selection or highlight in any input or output
+        ['dnaSequenceInput', 'annotationInput', 'fuzzySearchInput', 'fuzzySearchOutput', 'predictionOutput', 'generationOutput'].forEach(elementId => {
+            document.getElementById(elementId).addEventListener('input', updateCGRImage);
+            document.getElementById(elementId).addEventListener('mouseup', updateCGRImage);
+            document.getElementById(elementId).addEventListener('keyup', updateCGRImage);
+        });
+
+        function updateCGRImage() {
+            let inputElement = this;
+            if (this.id.endsWith('Output')) {
+                // If the event is from an output container, use the selected text
+                inputElement = window.getSelection().anchorNode.parentElement;
+            }
+            const selectedText = inputElement.value.substring(inputElement.selectionStart, inputElement.selectionEnd);
+            drawCGR(selectedText);
+        }
 
 
         function clearCGRPanel() {
@@ -194,6 +285,67 @@
         document.getElementById('dnaSequenceInput').addEventListener('mouseup', updateCGRFromInput);
         document.getElementById('dnaSequenceInput').addEventListener('keyup', updateCGRFromInput);
 
+    // List of DNA sequences and annotations
+    const dnaSequences = ['SEQ1', 'SEQ2', 'SEQ3', 'SEQ4'];
+    const annotations = ['ANN1', 'ANN2', 'ANN3', 'ANN4'];
+
+    // 2D array of precomputed pairwise distances
+    // Assuming the distances are stored in a manner where 
+    // sequences and annotations indices correspond to those in the dnaSequences and annotations arrays
+    const pairwiseDistances = [
+        // Distances between sequences, sequences and annotations, and annotations
+        // Example structure - replace with actual distances
+        [0, 10, 20, 30, 40, 50, 60, 70],
+        [10, 0, 30, 40, 50, 60, 70, 80],
+        [20, 30, 0, 50, 60, 70, 80, 90],
+        [30, 40, 50, 0, 70, 80, 90, 100],
+        [0, 10, 20, 30, 40, 50, 60, 70],
+        [10, 0, 30, 40, 50, 60, 70, 80],
+        [20, 30, 0, 50, 60, 70, 80, 90],
+        [30, 40, 50, 0, 70, 80, 90, 100]
+        // ... etc ...
+    ];
+
+    // Function to find top 3 closest matches for a given sequence
+    function findClosestMatches(input, isSequence = true) {
+        let inputIndex = isSequence ? dnaSequences.indexOf(input) : annotations.indexOf(input);
+        if (inputIndex === -1) return [];
+
+        let distances = pairwiseDistances[inputIndex];
+        let matchIndices = [];
+
+        // Assuming the first half of the array contains sequence-sequence or sequence-annotation distances
+        let startIndex = isSequence ? dnaSequences.length : 0;
+        let endIndex = isSequence ? (dnaSequences.length + annotations.length) : dnaSequences.length;
+
+        for (let i = startIndex; i < endIndex; i++) {
+            matchIndices.push({ index: i, distance: distances[i] });
+        }
+
+        // Sort by distance and get the top 3
+        matchIndices.sort((a, b) => a.distance - b.distance);
+        return matchIndices.slice(0, 3).map(x => isSequence ? annotations[x.index - dnaSequences.length] : dnaSequences[x.index]);
+    }
+
+    // Event listeners for input fields
+    document.getElementById('dnaSequenceInput').addEventListener('input', () => {
+        const sequence = document.getElementById('dnaSequenceInput').value;
+        const closestAnnotations = findClosestMatches(sequence, true);
+        displayResults(closestAnnotations, 'predictionOutput');
+    });
+
+    document.getElementById('annotationInput').addEventListener('input', () => {
+        const annotation = document.getElementById('annotationInput').value;
+        const closestSequences = findClosestMatches(annotation, false);
+        displayResults(closestSequences, 'generationOutput');
+    });
+
+    // Function to display the results
+    function displayResults(matches, outputElementId) {
+        const outputElement = document.getElementById(outputElementId);
+        outputElement.innerHTML = matches.map(match => `<div class='output-row'>${match}</div>`).join('');
+    }
+
         function updateCGRFromInput() {
             const input = document.getElementById('dnaSequenceInput');
             let selectedText = input.value.substring(input.selectionStart, input.selectionEnd);
@@ -212,7 +364,7 @@
             drawCGR(highlightedText);
         }
 
-        function drawCGR(sequence, k = 8) {
+        function drawCGR(sequence, k = 6) {
             if (!sequence) return; // Don't draw if sequence is empty
 
             const letterToX = { 'A': 0, 'C': 1, 'G': 0, 'T': 1 };
@@ -227,12 +379,11 @@
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, imgSize, imgSize);
 
-            // Calculate pixel size based on sequence length
             const pixelSize = Math.max(1, Math.ceil(10 * Math.log10(imgSize / sequence.length)));
-
             const substrs = getSubstrings(sequence, k);
-
             let frequencyMap = new Map();
+            let totalPixelCount = 0;
+
             substrs.forEach(substr => {
                 let x = 0, y = 0;
                 for (let i = 0; i < substr.length; i++) {
@@ -245,52 +396,72 @@
 
                 let pos = `${Math.floor(x)},${Math.floor(y)}`;
                 frequencyMap.set(pos, (frequencyMap.get(pos) || 0) + 1);
+                totalPixelCount++;
             });
-            let maxFrequency = Math.max(...frequencyMap.values());
-
-            if (maxFrequency === 0) maxFrequency = 1;
 
             frequencyMap.forEach((count, pos) => {
                 let [x, y] = pos.split(',').map(Number);
-                let color = getColorForFrequency(count);
+                let relativeFrequency = count / totalPixelCount;
+                let color = getColorForFrequency(relativeFrequency, 1); // Assuming max relative frequency is 1
                 ctx.fillStyle = color;
 
                 ctx.shadowBlur = pixelSize / 2;
                 ctx.shadowColor = color;
 
-                ctx.fillRect(x - pixelSize / 2, y - pixelSize / 2, pixelSize, pixelSize); // Draw a larger point
+                ctx.fillRect(x - pixelSize / 2, y - pixelSize / 2, pixelSize, pixelSize);
             });
 
             ctx.shadowBlur = 0;
-
-            drawColorBar();
+            drawColorBar(); // Pass 1 as maxFrequency since we're using relative frequencies
         }
 
 
-        function getColorForFrequency(frequency) {
-            // Define a more sophisticated color mapping as needed
-            if (frequency < 5) return '#add8e6';
-            if (frequency < 10) return '#0000ff';
-            return '#ff0000';
+        function getColorForFrequency(frequency, maxFrequency = 1) {
+            // Normalize the frequency to a value between 0 and 1
+            const normalizedFrequency = frequency / maxFrequency;
+
+            // Define colors for the gradient
+            const startColor = { r: 173, g: 216, b: 230 }; // Light Blue: #add8e6
+            const midColor = { r: 0, g: 0, b: 255 };      // Blue: #0000ff
+            const endColor = { r: 255, g: 0, b: 0 };      // Red: #ff0000
+
+            let color;
+            if (normalizedFrequency < 0.5) {
+                // Interpolate between startColor and midColor
+                color = interpolateColor(startColor, midColor, normalizedFrequency * 2);
+            } else {
+                // Interpolate between midColor and endColor
+                color = interpolateColor(midColor, endColor, (normalizedFrequency - 0.5) * 2);
+            }
+
+            return `rgb(${color.r}, ${color.g}, ${color.b})`;
         }
 
-        function drawColorBar(maxFrequency) {
+        function interpolateColor(color1, color2, factor) {
+            let result = {
+                r: Math.round(color1.r + factor * (color2.r - color1.r)),
+                g: Math.round(color1.g + factor * (color2.g - color1.g)),
+                b: Math.round(color1.b + factor * (color2.b - color1.b))
+            };
+            return result;
+        }
+
+
+        function drawColorBar() {
             const colorBar = document.getElementById('colorBarCanvas');
             colorBar.width = 20;
             colorBar.height = 350;
             const ctx = colorBar.getContext('2d');
 
-            // Adjust the maximum frequency to ignore the very highest value
-            const adjustedMaxFrequency = maxFrequency * 0.8; // Example: 80% of max frequency
-
             const gradient = ctx.createLinearGradient(0, 0, 0, 350);
-            gradient.addColorStop(0, '#ff0000'); // Red for highest frequency
-            gradient.addColorStop(0.5, '#0000ff'); // Dark blue for mid frequency
-            gradient.addColorStop(1, '#add8e6'); // Light blue for low frequency
+            gradient.addColorStop(0, '#ff0000'); // Red for highest relative frequency (1)
+            gradient.addColorStop(0.5, '#0000ff'); // Dark blue for mid relative frequency (0.5)
+            gradient.addColorStop(1, '#add8e6'); // Light blue for low relative frequency (0)
 
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, 20, 350);
         }
+
 
         function getSubstrings(str, length) {
             const substrs = [];
